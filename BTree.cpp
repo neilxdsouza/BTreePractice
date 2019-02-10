@@ -45,6 +45,8 @@ struct SearchRes {
 
 // expects never to be called if n == 0
 // also expects that n != 0 then atleast 1 key in the node
+// return value: if found the index is a key_vec index
+// return value: if NOT found the index is a branch index
 SearchRes search_node(string key, BTreeNode * n)
 {
 	string fn (__PRETTY_FUNCTION__);
@@ -63,8 +65,13 @@ SearchRes search_node(string key, BTreeNode * n)
 		int i = n->key_vec.size() - 1;
 		while (i > 0 && (key < n->key_vec[i])) { --i; }
 		cout << fn << " path 3: i: " << i << endl;
-		// an absurd value
-		return SearchRes(i+1, false, n->branch_vec[i+1] );
+		if (key == n->key_vec[i]) {
+			// NOTE we are returning a key_vec index
+			return SearchRes(i, true, 0 );
+		} else {
+			// NOTE we are returning a branch_vec index
+			return SearchRes(i+1, false, n->branch_vec[i+1] );
+		}
 	}
 }
 
@@ -115,6 +122,33 @@ bool unit_test_search_node_should_return_branch_0()
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == false && res.index == 0 && res.node == branches[0]"	
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_search_node_should_find_key_0()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("ad", node);
+	bool test_res = res.found == true && res.index == 0 && res.node == 0;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == true && res.index == 0 && res.node == 0"	
 			<<  " test_res: " << test_res 
 			<< res.print()
 			<< endl;
@@ -291,6 +325,11 @@ int main()
 	{
 		++n_tests;
 		unit_test_search_node_should_return_branch_4() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_should_find_key_0() ?
 			++n_passed : n_passed;
 	}
 	//{
