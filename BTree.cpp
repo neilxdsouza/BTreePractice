@@ -490,6 +490,22 @@ bool unit_test_search_node_lev_1_take_br0_3()
 	return test_res;
 }
 
+bool unit_test_search_node_lev_1_take_br0_2()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * n0_lev0 = make_lev0_lev1_data();
+	SearchRes res = search("abl", n0_lev0);
+	bool test_res = res.found == true && res.index == 2 && res.node == n0_lev0->branch_vec[0];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 0 && res.node == n0_lev0->branch_vec[0]"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
 /*
 bool unit_test_search_node_should_return_branch_5()
 {
@@ -583,6 +599,12 @@ int main()
 		unit_test_search_node_lev_1_take_br0_3() ? 
 			++n_passed : n_passed;
 	}
+	{
+		++n_tests;
+		unit_test_search_node_lev_1_take_br0_2() ? 
+			++n_passed : n_passed;
+	}
+
 	//{
 	//	++n_tests;
 	//	unit_test_search_node_should_return_branch_5() ?
