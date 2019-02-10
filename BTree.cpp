@@ -67,7 +67,7 @@ SearchRes search_node(string key, BTreeNode * n)
 		cout << fn << " path 3: i: " << i << endl;
 		if (key == n->key_vec[i]) {
 			// NOTE we are returning a key_vec index
-			return SearchRes(i, true, 0 );
+			return SearchRes(i, true, n );
 		} else {
 			// NOTE we are returning a branch_vec index
 			return SearchRes(i+1, false, n->branch_vec[i+1] );
@@ -82,7 +82,11 @@ SearchRes search(string key, BTreeNode * n)
 	if (n == 0) { return SearchRes(-1, false, 0); }
 	else {
 		SearchRes res = search_node(key, n);
-		return res;
+		if (res.found) {
+			return res;
+		} else {
+			return search (key, n->branch_vec[res.index]);
+		}
 	}
 }
 
@@ -111,17 +115,17 @@ bool unit_test_search_node_should_return_branch_0()
 	node_keys.push_back("al");
 	node_keys.push_back("ap");
 	vector<BTreeNode*> branches;
-	branches.push_back((BTreeNode*) 1);
-	branches.push_back((BTreeNode*) 2);
-	branches.push_back((BTreeNode*) 3);
-	branches.push_back((BTreeNode*) 4);
-	branches.push_back((BTreeNode*) 5);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("ac", node);
-	bool test_res = res.found == false && res.index == 0 && res.node == branches[0];
+	bool test_res = res.found == false && res.index == -1 && res.node == 0;
 	if (!test_res) {
 		cout << fn << " failed " 
-			<< "res.found == false && res.index == 0 && res.node == branches[0]"	
+			<< "res.found == false && res.index == 0 && res.node == 0"	
 			<<  " test_res: " << test_res 
 			<< res.print()
 			<< endl;
@@ -145,7 +149,7 @@ bool unit_test_search_node_should_find_key_0()
 	branches.push_back((BTreeNode*) 5);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("ad", node);
-	bool test_res = res.found == true && res.index == 0 && res.node == 0;
+	bool test_res = res.found == true && res.index == 0 && res.node == node;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == true && res.index == 0 && res.node == 0"	
@@ -165,14 +169,14 @@ bool unit_test_search_node_should_return_branch_1()
 	node_keys.push_back("al");
 	node_keys.push_back("ap");
 	vector<BTreeNode*> branches;
-	branches.push_back((BTreeNode*) 1);
-	branches.push_back((BTreeNode*) 2);
-	branches.push_back((BTreeNode*) 3);
-	branches.push_back((BTreeNode*) 4);
-	branches.push_back((BTreeNode*) 5);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("af", node);
-	bool test_res = res.found == false && res.index == 1 && res.node == branches[1];
+	bool test_res = res.found == false && res.index == -1 && res.node == 0;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == false && res.index == 1 && res.node == branches[1]"
@@ -200,7 +204,7 @@ bool unit_test_search_node_should_find_key_1()
 	branches.push_back((BTreeNode*) 5);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("ah", node);
-	bool test_res = res.found == true && res.index == 1 && res.node == 0;
+	bool test_res = res.found == true && res.index == 1 && res.node == node;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == true && res.index == 1 && res.node == 0"	
@@ -220,17 +224,17 @@ bool unit_test_search_node_should_return_branch_2()
 	node_keys.push_back("al");
 	node_keys.push_back("ap");
 	vector<BTreeNode*> branches;
-	branches.push_back((BTreeNode*) 1);
-	branches.push_back((BTreeNode*) 2);
-	branches.push_back((BTreeNode*) 3);
-	branches.push_back((BTreeNode*) 4);
-	branches.push_back((BTreeNode*) 5);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("aj", node);
-	bool test_res = res.found == false && res.index == 2 && res.node == branches[2];
+	bool test_res = res.found == false && res.index == -1 && res.node == 0;
 	if (!test_res) {
 		cout << fn << " failed " 
-			<< "res.found == false && res.index == 2 && res.node == branches[2]"
+			<< "res.found == false && res.index == -1 && res.node == 0"
 			<<  " test_res: " << test_res 
 			<< res.print()
 			<< endl;
@@ -254,7 +258,7 @@ bool unit_test_search_node_should_find_key_2()
 	branches.push_back((BTreeNode*) 5);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("al", node);
-	bool test_res = res.found == true && res.index == 2 && res.node == 0;
+	bool test_res = res.found == true && res.index == 2 && res.node == node;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == true && res.index == 2 && res.node == 0;"	
@@ -274,17 +278,17 @@ bool unit_test_search_node_should_return_branch_3()
 	node_keys.push_back("al");
 	node_keys.push_back("ap");
 	vector<BTreeNode*> branches;
-	branches.push_back((BTreeNode*) 1);
-	branches.push_back((BTreeNode*) 2);
-	branches.push_back((BTreeNode*) 3);
-	branches.push_back((BTreeNode*) 4);
-	branches.push_back((BTreeNode*) 5);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("an", node);
-	bool test_res = res.found == false && res.index == 3 && res.node == branches[3];
+	bool test_res = res.found == false && res.index == -1 && res.node == 0;
 	if (!test_res) {
 		cout << fn << " failed " 
-			<< "res.found == false && res.index == 3 && res.node == branches[3]"
+			<< "res.found == false && res.index == -1 && res.node == 0"
 			<<  " test_res: " << test_res 
 			<< res.print()
 			<< endl;
@@ -308,7 +312,7 @@ bool unit_test_search_node_should_find_key_3()
 	branches.push_back((BTreeNode*) 5);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("ap", node);
-	bool test_res = res.found == true && res.index == 3 && res.node == 0;
+	bool test_res = res.found == true && res.index == 3 && res.node == node;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == true && res.index == 3 && res.node == 0"	
@@ -328,17 +332,135 @@ bool unit_test_search_node_should_return_branch_4()
 	node_keys.push_back("al");
 	node_keys.push_back("ap");
 	vector<BTreeNode*> branches;
-	branches.push_back((BTreeNode*) 1);
-	branches.push_back((BTreeNode*) 2);
-	branches.push_back((BTreeNode*) 3);
-	branches.push_back((BTreeNode*) 4);
-	branches.push_back((BTreeNode*) 5);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
+	branches.push_back((BTreeNode*) 0);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
 	SearchRes res = search("ar", node);
-	bool test_res = res.found == false && res.index == 4 && res.node == branches[4];
+	bool test_res = res.found == false && res.index == -1 && res.node == 0;
 	if (!test_res) {
 		cout << fn << " failed " 
-			<< "res.found == false && res.index == 4 && res.node == branches[4]"
+			<< "res.found == false && res.index == -1 && res.node == 0"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+
+bool unit_test_search_node_lev_1_take_br0()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * n0_lev0 = 0;
+	{
+		vector<string> node_keys ;
+		node_keys.push_back("ad");
+		node_keys.push_back("ah");
+		node_keys.push_back("al");
+		node_keys.push_back("ap");
+		vector<BTreeNode*> branches;
+		branches.push_back((BTreeNode*) 1);
+		branches.push_back((BTreeNode*) 2);
+		branches.push_back((BTreeNode*) 3);
+		branches.push_back((BTreeNode*) 4);
+		branches.push_back((BTreeNode*) 5);
+		n0_lev0 = new BTreeNode(node_keys, branches);
+	}
+
+	BTreeNode * n0_lev1 = 0;
+	{
+		vector<string> node_keys ;
+		node_keys.push_back("abd");
+		node_keys.push_back("abh");
+		node_keys.push_back("abl");
+		node_keys.push_back("abp");
+		vector<BTreeNode*> branches;
+		branches.push_back((BTreeNode*) 11);
+		branches.push_back((BTreeNode*) 12);
+		branches.push_back((BTreeNode*) 13);
+		branches.push_back((BTreeNode*) 14);
+		branches.push_back((BTreeNode*) 15);
+		n0_lev1 = new BTreeNode(node_keys, branches);
+	}
+	n0_lev0->branch_vec[0] = n0_lev1;
+
+	BTreeNode * n1_lev1 = 0;
+	{
+		vector<string> node_keys ;
+		node_keys.push_back("afd");
+		node_keys.push_back("afh");
+		node_keys.push_back("afl");
+		node_keys.push_back("afp");
+		vector<BTreeNode*> branches;
+		branches.push_back((BTreeNode*) 21);
+		branches.push_back((BTreeNode*) 22);
+		branches.push_back((BTreeNode*) 23);
+		branches.push_back((BTreeNode*) 24);
+		branches.push_back((BTreeNode*) 25);
+		n1_lev1 = new BTreeNode(node_keys, branches);
+	}
+	n0_lev0->branch_vec[1] = n1_lev1;
+
+	BTreeNode * n2_lev1 = 0;
+	{
+		vector<string> node_keys ;
+		node_keys.push_back("ajd");
+		node_keys.push_back("ajh");
+		node_keys.push_back("ajl");
+		node_keys.push_back("ajp");
+		vector<BTreeNode*> branches;
+		branches.push_back((BTreeNode*) 31);
+		branches.push_back((BTreeNode*) 32);
+		branches.push_back((BTreeNode*) 33);
+		branches.push_back((BTreeNode*) 34);
+		branches.push_back((BTreeNode*) 35);
+		n2_lev1 = new BTreeNode(node_keys, branches);
+	}
+	n0_lev0->branch_vec[2] = n2_lev1;
+
+	BTreeNode * n3_lev1 = 0;
+	{
+		vector<string> node_keys ;
+		node_keys.push_back("and");
+		node_keys.push_back("anh");
+		node_keys.push_back("anl");
+		node_keys.push_back("anp");
+		vector<BTreeNode*> branches;
+		branches.push_back((BTreeNode*) 41);
+		branches.push_back((BTreeNode*) 42);
+		branches.push_back((BTreeNode*) 43);
+		branches.push_back((BTreeNode*) 44);
+		branches.push_back((BTreeNode*) 45);
+		n3_lev1 = new BTreeNode(node_keys, branches);
+	}
+	n0_lev0->branch_vec[3] = n3_lev1;
+
+	BTreeNode * n4_lev1 = 0;
+	{
+		vector<string> node_keys ;
+		node_keys.push_back("asd");
+		node_keys.push_back("ash");
+		node_keys.push_back("asl");
+		node_keys.push_back("asp");
+		vector<BTreeNode*> branches;
+		branches.push_back((BTreeNode*) 51);
+		branches.push_back((BTreeNode*) 52);
+		branches.push_back((BTreeNode*) 53);
+		branches.push_back((BTreeNode*) 54);
+		branches.push_back((BTreeNode*) 55);
+		n4_lev1 = new BTreeNode(node_keys, branches);
+	}
+	n0_lev0->branch_vec[4] = n4_lev1;
+
+	SearchRes res = search("abd", n0_lev0);
+
+	bool test_res = res.found == true && res.index == 0 && res.node == n0_lev0->branch_vec[0];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 0 && res.node == n0_lev0->branch_vec[0]"
 			<<  " test_res: " << test_res 
 			<< res.print()
 			<< endl;
@@ -427,6 +549,11 @@ int main()
 	{
 		++n_tests;
 		unit_test_search_node_should_find_key_3() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_lev_1_take_br0() ? 
 			++n_passed : n_passed;
 	}
 	//{
