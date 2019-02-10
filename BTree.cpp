@@ -458,13 +458,28 @@ BTreeNode * make_lev0_lev1_data()
 
 }
 
-bool unit_test_search_node_lev_1_take_br0()
+bool unit_test_search_node_lev_1_take_br0_0()
 {
 	string fn(__PRETTY_FUNCTION__); 
 	BTreeNode * n0_lev0 = make_lev0_lev1_data();
 	SearchRes res = search("abd", n0_lev0);
-
 	bool test_res = res.found == true && res.index == 0 && res.node == n0_lev0->branch_vec[0];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 0 && res.node == n0_lev0->branch_vec[0]"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_search_node_lev_1_take_br0_3()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * n0_lev0 = make_lev0_lev1_data();
+	SearchRes res = search("abp", n0_lev0);
+	bool test_res = res.found == true && res.index == 3 && res.node == n0_lev0->branch_vec[0];
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == false && res.index == 0 && res.node == n0_lev0->branch_vec[0]"
@@ -560,7 +575,12 @@ int main()
 	}
 	{
 		++n_tests;
-		unit_test_search_node_lev_1_take_br0() ? 
+		unit_test_search_node_lev_1_take_br0_0() ? 
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_lev_1_take_br0_3() ? 
 			++n_passed : n_passed;
 	}
 	//{
