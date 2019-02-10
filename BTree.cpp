@@ -51,11 +51,21 @@ SearchRes search_node(string key, BTreeNode * n)
 	cout << "ENTER : " << fn << endl;
 	//return SearchRes(-1, true, (BTreeNode*)1);
 	if (key < n->key_vec[0]) {
+		cout << fn << " path 1" << endl;
 		return SearchRes(0, false, n->branch_vec[0]);
+	} else if (key > n->key_vec[n->key_vec.size() - 1]) {
+		// an absurd value
+		// return SearchRes(-1, true, (BTreeNode * )1 );
+		cout << fn << " path 2" << endl;
+		return SearchRes(n->key_vec.size(), false,
+				n->branch_vec[n->key_vec.size()]);
 	} else {
-		return SearchRes(-1, true, (BTreeNode * )1 );
+		int i = n->key_vec.size() - 1;
+		while (i > 0 && (key < n->key_vec[i])) { --i; }
+		cout << fn << " path 3: i: " << i << endl;
+		// an absurd value
+		return SearchRes(i+1, false, n->branch_vec[i+1] );
 	}
-	
 }
 
 SearchRes search(string key, BTreeNode * n)
@@ -88,7 +98,142 @@ bool unit_test_search_null_node_should_return_impossible_to_continue()
 bool unit_test_search_node_should_return_branch_0()
 {
 	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("ac", node);
+	bool test_res = res.found == false && res.index == 0 && res.node == branches[0];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 0 && res.node == branches[0]"	
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
 
+bool unit_test_search_node_should_return_branch_1()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("af", node);
+	bool test_res = res.found == false && res.index == 1 && res.node == branches[1];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 1 && res.node == branches[1]"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_search_node_should_return_branch_2()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("aj", node);
+	bool test_res = res.found == false && res.index == 2 && res.node == branches[2];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 2 && res.node == branches[2]"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_search_node_should_return_branch_3()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("an", node);
+	bool test_res = res.found == false && res.index == 3 && res.node == branches[3];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 3 && res.node == branches[3]"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_search_node_should_return_branch_4()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("ar", node);
+	bool test_res = res.found == false && res.index == 4 && res.node == branches[4];
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 4 && res.node == branches[4]"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+/*
+bool unit_test_search_node_should_return_branch_5()
+{
+	string fn(__PRETTY_FUNCTION__); 
 	vector<string> node_keys ;
 	node_keys.push_back("ad");
 	node_keys.push_back("ah");
@@ -102,16 +247,18 @@ bool unit_test_search_node_should_return_branch_0()
 	branches.push_back((BTreeNode*) 4);
 	branches.push_back((BTreeNode*) 5);
 	BTreeNode * node = new BTreeNode(node_keys, branches);
-	SearchRes res = search("ac", node);
-	bool test_res = res.found == false && res.index == 0 && res.node == branches[0];
+	SearchRes res = search("av", node);
+	bool test_res = res.found == false && res.index == 5 && res.node == branches[5];
 	if (!test_res) {
-		cout << fn << " failed " << "res.found == false && res.index == 0 && res.node == 0"
+		cout << fn << " failed " 
+			<< "res.found == false && res.index == 5 && res.node == branches[5]"
 			<<  " test_res: " << test_res 
 			<< res.print()
 			<< endl;
 	}
 	return test_res;
 }
+*/
 
 int main()
 {
@@ -126,6 +273,31 @@ int main()
 		unit_test_search_node_should_return_branch_0() ?
 			++n_passed : n_passed;
 	}
+	{
+		++n_tests;
+		unit_test_search_node_should_return_branch_1() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_should_return_branch_2() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_should_return_branch_3() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_should_return_branch_4() ?
+			++n_passed : n_passed;
+	}
+	//{
+	//	++n_tests;
+	//	unit_test_search_node_should_return_branch_5() ?
+	//		++n_passed : n_passed;
+	//}
 	cout << " n_tests: " << n_tests << ", n_passed: " << n_passed
 		<<  " / " << n_tests << endl;
 }
