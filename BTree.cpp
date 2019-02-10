@@ -183,6 +183,34 @@ bool unit_test_search_node_should_return_branch_1()
 	return test_res;
 }
 
+
+bool unit_test_search_node_should_find_key_1()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("ah", node);
+	bool test_res = res.found == true && res.index == 1 && res.node == 0;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == true && res.index == 1 && res.node == 0"	
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
 bool unit_test_search_node_should_return_branch_2()
 {
 	string fn(__PRETTY_FUNCTION__); 
@@ -210,6 +238,33 @@ bool unit_test_search_node_should_return_branch_2()
 	return test_res;
 }
 
+bool unit_test_search_node_should_find_key_2()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("al", node);
+	bool test_res = res.found == true && res.index == 2 && res.node == 0;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == true && res.index == 2 && res.node == 0;"	
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
 bool unit_test_search_node_should_return_branch_3()
 {
 	string fn(__PRETTY_FUNCTION__); 
@@ -230,6 +285,33 @@ bool unit_test_search_node_should_return_branch_3()
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.found == false && res.index == 3 && res.node == branches[3]"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_search_node_should_find_key_3()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 1);
+	branches.push_back((BTreeNode*) 2);
+	branches.push_back((BTreeNode*) 3);
+	branches.push_back((BTreeNode*) 4);
+	branches.push_back((BTreeNode*) 5);
+	BTreeNode * node = new BTreeNode(node_keys, branches);
+	SearchRes res = search("ap", node);
+	bool test_res = res.found == true && res.index == 3 && res.node == 0;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.found == true && res.index == 3 && res.node == 0"	
 			<<  " test_res: " << test_res 
 			<< res.print()
 			<< endl;
@@ -330,6 +412,21 @@ int main()
 	{
 		++n_tests;
 		unit_test_search_node_should_find_key_0() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_should_find_key_1() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_should_find_key_2() ?
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_search_node_should_find_key_3() ?
 			++n_passed : n_passed;
 	}
 	//{
