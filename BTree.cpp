@@ -350,10 +350,9 @@ bool unit_test_search_node_should_return_branch_4()
 	return test_res;
 }
 
-
-bool unit_test_search_node_lev_1_take_br0()
+BTreeNode * make_lev0_lev1_data()
 {
-	string fn(__PRETTY_FUNCTION__); 
+
 	BTreeNode * n0_lev0 = 0;
 	{
 		vector<string> node_keys ;
@@ -455,6 +454,14 @@ bool unit_test_search_node_lev_1_take_br0()
 	}
 	n0_lev0->branch_vec[4] = n4_lev1;
 
+	return n0_lev0;
+
+}
+
+bool unit_test_search_node_lev_1_take_br0()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * n0_lev0 = make_lev0_lev1_data();
 	SearchRes res = search("abd", n0_lev0);
 
 	bool test_res = res.found == true && res.index == 0 && res.node == n0_lev0->branch_vec[0];
