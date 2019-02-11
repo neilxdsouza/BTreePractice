@@ -25,6 +25,8 @@ struct BTreeNode {
 	BTreeNode( const vector<string> & keys, const vector<BTreeNode *> & branches):
 		key_vec(keys), branch_vec(branches)
 	{}
+	BTreeNode() : key_vec(), branch_vec() { }
+	bool is_leaf() { return branch_vec.size() == 0; }
 };
 
 
@@ -72,6 +74,112 @@ SearchRes search_node(string key, BTreeNode * n)
 			// NOTE we are returning a branch_vec index
 			return SearchRes(i+1, false, n->branch_vec[i+1] );
 		}
+	}
+}
+
+struct InsertResult {
+	bool node_was_split;
+	string median_key_from_below;
+	BTreeNode* new_right_child_of_median_key;
+	BTreeNode * new_root;
+	InsertResult(bool f, BTreeNode * p_new_root): node_was_split(f), new_root(p_new_root) { }
+	string print() {
+		string fn(__PRETTY_FUNCTION__);
+		stringstream ss;
+		ss << fn << " node_was_split: " << node_was_split
+			<< ", median_key_from_below: " << median_key_from_below << endl;
+		for (int i = 0; i < new_root->key_vec.size(); ++i) {
+			ss << ", key_vec[" << i << "]: " << new_root->key_vec[i];
+		}
+		ss << endl;
+		return ss.str();
+	}
+};
+
+void print_vec(string label, vector<string> v)
+{
+	cout << label << "sz: " << v.size() << endl;
+	for (int i = 0; i < v.size(); ++i) { cout <<  ", " <<  v[i]; }
+	cout << endl;
+}
+
+void insert_into_non_full_node(string key, BTreeNode * n, BTreeNode * right_branch)
+{
+	string fn(__PRETTY_FUNCTION__);
+	cout << "ENTER " << fn << ", key : " << key << ", right_branch: " << right_branch << endl;
+	int i = 0;
+	for (; i < n->key_vec.size(); ++i) {
+		cout << "INFO " << fn << ", i: " << i 
+			<< ", key: " << key << ", key_vec[" << i << "]: "
+			<< n->key_vec[i]
+			<< ", (key < n->key_vec[i]): " << (key < n->key_vec[i])
+			<< endl;
+		if (key < n->key_vec[i]) {
+			break;
+		}
+	}
+	cout << "INFO " << fn << ", i: " << i << endl;
+	if (i < n->key_vec.size() - 1) {
+		int sz = n->key_vec.size();
+		cout << "INFO " << fn << " sz: " << sz << endl;
+		n->key_vec.insert(n->key_vec.begin() + sz - 1 ,  n->key_vec[sz-1]);
+		print_vec("key_vec", n->key_vec);
+		cout << "n->key_vec.size(): " << n->key_vec.size () << endl;
+		if (n->branch_vec.size() > sz+1) {
+			n->branch_vec.insert(n->branch_vec.begin()+ sz + 1,  n->branch_vec[sz]);
+		}
+		cout << "n->key_vec.size(): " << n->key_vec.size () << endl;
+		for (int k = sz-1; k >= i; --k) {
+			cout << fn << " INFO k : " << k << ", copying " << k  << " to " << k+ 1 << endl;
+			//n->key_vec.insert(n->key_vec.begin() + k+1,  n->key_vec[k]);
+			n->key_vec[k+1] = n->key_vec[k];
+			cout << fn << " INFO n->key_vec.size() : " << n->key_vec.size() << endl;
+			if (n->branch_vec.size() > k+1) {
+				//n->branch_vec.insert(n->branch_vec.begin()+ k + 2,  n->branch_vec[k+1]);
+				n->branch_vec[ k + 2] = n->branch_vec[k+1];
+			}
+		}
+		n->key_vec[i ] =  key;
+	} else {
+		n->key_vec.insert(n->key_vec.begin() + n->key_vec.size() - 1 ,  key);
+	}
+	print_vec("key_vec 2", n->key_vec);
+	if (n->branch_vec.size() > i+1) {
+		n->branch_vec.insert(n->branch_vec.begin()+i+1,  right_branch);
+	}
+}
+
+// assumption - this fn will never be called with root == NULL
+InsertResult recursivelyInsertAtLeaf(string key, BTreeNode * n)
+{
+	string fn (__PRETTY_FUNCTION__);
+	cout << "ENTER " << fn << key << endl;
+	if (n->is_leaf()) {
+		// if there's space insert the data into the leaf
+		if (n->key_vec.size() < MAX_NODE_INDEX + 1) {
+			insert_into_non_full_node(key, n, 0);
+			return InsertResult(false, n);
+		}
+	} else {
+		// split the leaf and pass the median key up
+		// the parent for insertion 
+		// right subtrees of the median key
+		// will go into the right sibling of this node
+		// the immediate right child of the median will be the 
+		// new subtree that was split off
+		// NOTE for now - dummy value 
+		return InsertResult(true, n);
+	}
+}
+
+InsertResult  insert(string key, BTreeNode * & root)
+{
+	if (root == 0) {
+		root = new BTreeNode();
+		root->key_vec.push_back(key);
+		return InsertResult(false, root);
+	} else {
+		 return recursivelyInsertAtLeaf(key, root);
 	}
 }
 
@@ -539,6 +647,131 @@ bool unit_test_search_node_lev_1_take_br3_1()
 	return test_res;
 }
 
+bool unit_test_insert_null_root()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * r = 0;
+	string k = "k";
+	InsertResult  res = insert(k, r); 
+	bool test_res = res.node_was_split == false && r->key_vec[0] == k && r->key_vec.size() == 1;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.node_was_split == false && r->key_vec[0] == k && r->key_vec.size() == 1"
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_insert_1()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * n = new BTreeNode();
+	n->key_vec.push_back("b");
+	string k = "a";
+	InsertResult  res = insert(k, n); 
+	bool test_res = 
+		res.node_was_split == false && 
+		n->key_vec[0] == k &&
+		n->key_vec[1] == "b" &&
+		n->key_vec.size() == 2;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.node_was_split == false && r->key_vec[0] == k && r->key_vec.size() == 1"
+			<< "res.node_was_split == false && "
+			<< "r->key_vec[0] == k && r->vector[1] == \"b\" &&"
+			<< "r->key_vec.size() == 2"  << endl
+			<<  " test_res: " << test_res 
+			<< endl
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_insert_2()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * n = new BTreeNode();
+	n->key_vec.push_back("a");
+	string k = "b";
+	InsertResult  res = insert(k, n); 
+	bool test_res = 
+		res.node_was_split == false && 
+		n->key_vec[0] == "a" &&
+		n->key_vec[1] == "b" &&
+		n->key_vec.size() == 2;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<< "res.node_was_split == false && r->key_vec[0] == k && r->key_vec.size() == 1"
+			<< "res.node_was_split == false && "
+			<< "r->key_vec[0] == \"a\" && r->vector[1] == \"b\" &&"
+			<< "r->key_vec.size() == 2"  << endl
+			<<  " test_res: " << test_res 
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_insert_31()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	BTreeNode * n = new BTreeNode();
+	n->key_vec.push_back("a");
+	n->key_vec.push_back("b");
+	string k = "c";
+	InsertResult  res = insert(k, n); 
+	bool test_res = 
+		res.node_was_split == false && 
+		n->key_vec[0] == "a" &&
+		n->key_vec[1] == "b" &&
+		n->key_vec[2] == "c" &&
+		n->key_vec.size() == 3;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<<  " test_res: " << test_res 
+			<< " res.node_was_split == false && "
+			<< " n->key_vec[0] == \"a\" &&"
+			<< " n->key_vec[1] == \"b\" &&"
+			<< " n->key_vec[2] == \"c\" &&"
+			<< " n->key_vec.size() == 3 "
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
+bool unit_test_insert_32()
+{
+	string fn(__PRETTY_FUNCTION__); 
+	cout << "ENTER " << fn << endl;
+	BTreeNode * n = new BTreeNode();
+	n->key_vec.push_back("b");
+	n->key_vec.push_back("c");
+	string k = "a";
+	InsertResult  res = insert(k, n); 
+	bool test_res = 
+		res.node_was_split == false && 
+		n->key_vec[0] == "a" &&
+		n->key_vec[1] == "b" &&
+		n->key_vec[2] == "c" &&
+		n->key_vec.size() == 3;
+	if (!test_res) {
+		cout << fn << " failed " 
+			<<  " test_res: " << test_res 
+			<< " res.node_was_split == false && "
+			<< " n->key_vec[0] == \"a\" &&"
+			<< " n->key_vec[1] == \"b\" &&"
+			<< " n->key_vec[2] == \"c\" &&"
+			<< " n->key_vec.size() == 3 "
+			<< res.print()
+			<< endl;
+	}
+	return test_res;
+}
+
 /*
 bool unit_test_search_node_should_return_branch_5()
 {
@@ -645,6 +878,31 @@ int main()
 	{
 		++n_tests;
 		unit_test_search_node_lev_1_take_br3_1() ? 
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_insert_null_root() ? 
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_insert_1() ? 
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_insert_2() ? 
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_insert_31() ? 
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_insert_32() ? 
 			++n_passed : n_passed;
 	}
 
