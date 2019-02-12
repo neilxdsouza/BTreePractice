@@ -107,6 +107,7 @@ void insert_into_non_full_node(string key, BTreeNode * n, BTreeNode * right_bran
 {
 	string fn(__PRETTY_FUNCTION__);
 	cout << "ENTER " << fn << ", key : " << key << ", right_branch: " << right_branch << endl;
+	print_vec(fn, n->key_vec);
 	int i = 0;
 	for (; i < n->key_vec.size(); ++i) {
 		cout << "INFO " << fn << ", i: " << i 
@@ -119,38 +120,11 @@ void insert_into_non_full_node(string key, BTreeNode * n, BTreeNode * right_bran
 		}
 	}
 	cout << "INFO " << fn << ", i: " << i << endl;
-	if (i < n->key_vec.size() - 1) {
-		int sz = n->key_vec.size();
-		cout << "INFO " << fn << " sz: " << sz << endl;
-		n->key_vec.insert(n->key_vec.begin() + sz - 1 ,  n->key_vec[sz-1]);
-		print_vec("key_vec", n->key_vec);
-		cout << "n->key_vec.size(): " << n->key_vec.size () << endl;
-		if (n->branch_vec.size() > sz+1) {
-			n->branch_vec.insert(n->branch_vec.begin()+ sz + 1,  n->branch_vec[sz]);
-		}
-		cout << "n->key_vec.size(): " << n->key_vec.size () << endl;
-		for (int k = sz-1; k >= i; --k) {
-			cout << fn << " INFO k : " << k << ", copying " << k  << " to " << k+ 1 << endl;
-			//n->key_vec.insert(n->key_vec.begin() + k+1,  n->key_vec[k]);
-			n->key_vec[k+1] = n->key_vec[k];
-			cout << fn << " INFO n->key_vec.size() : " << n->key_vec.size() << endl;
-			if (n->branch_vec.size() > k+1) {
-				//n->branch_vec.insert(n->branch_vec.begin()+ k + 2,  n->branch_vec[k+1]);
-				n->branch_vec[ k + 2] = n->branch_vec[k+1];
-			}
-		}
-		n->key_vec[i ] =  key;
-	} else {
-		n->key_vec.insert(n->key_vec.begin() + n->key_vec.size() - 1 ,  key);
-	}
-	print_vec("key_vec 2", n->key_vec);
-	if (n->branch_vec.size() > i+1) {
-		n->branch_vec.insert(n->branch_vec.begin()+i+1,  right_branch);
-	}
+		n->key_vec.insert(n->key_vec.begin() + i  ,  key);
 }
 
 // assumption - this fn will never be called with root == NULL
-InsertResult recursivelyInsertAtLeaf(string key, BTreeNode * n)
+InsertResult recursivelyInsertAtLeaf(string key, BTreeNode * & n)
 {
 	string fn (__PRETTY_FUNCTION__);
 	cout << "ENTER " << fn << key << endl;
@@ -673,9 +647,10 @@ bool unit_test_insert_1()
 	InsertResult  res = insert(k, n); 
 	bool test_res = 
 		res.node_was_split == false && 
+		n->key_vec.size() == 2 &&
 		n->key_vec[0] == k &&
-		n->key_vec[1] == "b" &&
-		n->key_vec.size() == 2;
+		n->key_vec[1] == "b"
+		;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.node_was_split == false && r->key_vec[0] == k && r->key_vec.size() == 1"
@@ -699,9 +674,10 @@ bool unit_test_insert_2()
 	InsertResult  res = insert(k, n); 
 	bool test_res = 
 		res.node_was_split == false && 
+		n->key_vec.size() == 2 &&
 		n->key_vec[0] == "a" &&
-		n->key_vec[1] == "b" &&
-		n->key_vec.size() == 2;
+		n->key_vec[1] == "b" 
+		;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<< "res.node_was_split == false && r->key_vec[0] == k && r->key_vec.size() == 1"
@@ -725,10 +701,11 @@ bool unit_test_insert_31()
 	InsertResult  res = insert(k, n); 
 	bool test_res = 
 		res.node_was_split == false && 
+		n->key_vec.size() == 3 &&
 		n->key_vec[0] == "a" &&
 		n->key_vec[1] == "b" &&
-		n->key_vec[2] == "c" &&
-		n->key_vec.size() == 3;
+		n->key_vec[2] == "c"
+		;
 	if (!test_res) {
 		cout << fn << " failed " 
 			<<  " test_res: " << test_res 
@@ -754,10 +731,10 @@ bool unit_test_insert_32()
 	InsertResult  res = insert(k, n); 
 	bool test_res = 
 		res.node_was_split == false && 
+		n->key_vec.size() == 3 &&
 		n->key_vec[0] == "a" &&
 		n->key_vec[1] == "b" &&
-		n->key_vec[2] == "c" &&
-		n->key_vec.size() == 3;
+		n->key_vec[2] == "c";
 	if (!test_res) {
 		cout << fn << " failed " 
 			<<  " test_res: " << test_res 
