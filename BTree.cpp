@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
+#include <iterator>
 
 using std::string;
 using std::vector;
@@ -11,7 +13,7 @@ using std::endl;
 using std::cerr;
 using std::stringstream;
 
-const int MAX_NODE_INDEX = 4;
+const int MAX_NODE_INDEX = 3;
 const int MIN_NODE_INDEX = 2 * MAX_NODE_INDEX;
 
 //        key_vec[0]               key_vec[1]               key_vec[2]
@@ -80,6 +82,8 @@ SearchRes search_node(string key, BTreeNode * n)
 struct InsertResult {
 	bool node_was_split;
 	string median_key_from_below;
+	vector<string> new_left_keys;
+	vector<string> new_right_keys;
 	BTreeNode* new_right_child_of_median_key;
 	BTreeNode * new_root;
 	InsertResult(bool f, BTreeNode * p_new_root): node_was_split(f), new_root(p_new_root) { }
@@ -103,24 +107,68 @@ void print_vec(string label, vector<string> v)
 	cout << endl;
 }
 
+int find_insert_position(string key, BTreeNode * n)
+{
+
+	int i = 0;
+	for (; i < n->key_vec.size(); ++i) {
+		//cout << "INFO " << fn << ", i: " << i 
+		//	<< ", key: " << key << ", key_vec[" << i << "]: "
+		//	<< n->key_vec[i]
+		//	<< ", (key < n->key_vec[i]): " << (key < n->key_vec[i])
+		//	<< endl;
+		if (key < n->key_vec[i]) {
+			break;
+		}
+	}
+	return i;
+
+}
+
 void insert_into_non_full_node(string key, BTreeNode * n, BTreeNode * right_branch)
 {
 	string fn(__PRETTY_FUNCTION__);
 	cout << "ENTER " << fn << ", key : " << key << ", right_branch: " << right_branch << endl;
 	print_vec(fn, n->key_vec);
-	int i = 0;
-	for (; i < n->key_vec.size(); ++i) {
-		cout << "INFO " << fn << ", i: " << i 
-			<< ", key: " << key << ", key_vec[" << i << "]: "
-			<< n->key_vec[i]
-			<< ", (key < n->key_vec[i]): " << (key < n->key_vec[i])
-			<< endl;
-		if (key < n->key_vec[i]) {
-			break;
-		}
+
+	//int i = 0;
+	//for (; i < n->key_vec.size(); ++i) {
+	//	cout << "INFO " << fn << ", i: " << i 
+	//		<< ", key: " << key << ", key_vec[" << i << "]: "
+	//		<< n->key_vec[i]
+	//		<< ", (key < n->key_vec[i]): " << (key < n->key_vec[i])
+	//		<< endl;
+	//	if (key < n->key_vec[i]) {
+	//		break;
+	//	}
+	//}
+	int insert_pos = find_insert_position(key, n);
+
+	cout << "INFO " << fn << ", i: " << insert_pos << endl;
+	n->key_vec.insert(n->key_vec.begin() + insert_pos  ,  key);
+}
+
+InsertResult  insert_into_full_node_and_split(string key, BTreeNode * n, BTreeNode * right_branch)
+{
+	string fn (__PRETTY_FUNCTION__);
+	// return dummy value for Now
+	int insert_pos = find_insert_position(key, n);
+	if (insert_pos < MAX_NODE_INDEX) {
+		// new node going into the left half
+		n->key_vec.insert(n->key_vec.begin() + insert_pos  ,  key);
+		vector<string> v_left, v_right;
+		string median_key = n->key_vec[(MAX_NODE_INDEX + 1)/2];
+		v_left.reserve(MAX_NODE_INDEX+1); v_right.reserve(MAX_NODE_INDEX+1);
+		std::copy_n(n->key_vec.cbegin(), (MAX_NODE_INDEX+1)/2 , v_left.begin());
+		std::copy_n(n->key_vec.cbegin()+ (MAX_NODE_INDEX+1)/2 + 1,
+				(MAX_NODE_INDEX+1)/2, v_right.begin());
+		cout << "median_key: " << median_key << endl;
+		print_vec("v_left", v_left);
+		print_vec("v_right", v_right);
+	} else {
+		// new node going into the right half
 	}
-	cout << "INFO " << fn << ", i: " << i << endl;
-		n->key_vec.insert(n->key_vec.begin() + i  ,  key);
+	return InsertResult(false, n);
 }
 
 // assumption - this fn will never be called with root == NULL
@@ -133,6 +181,14 @@ InsertResult recursivelyInsertAtLeaf(string key, BTreeNode * & n)
 		if (n->key_vec.size() < MAX_NODE_INDEX + 1) {
 			insert_into_non_full_node(key, n, 0);
 			return InsertResult(false, n);
+		} else {
+			// we need to insert the key and split the 
+			// node at the median
+			InsertResult  res = insert_into_full_node_and_split(key, n, 0);
+			// for now as a place holder return a dummy wrong value for 
+			// code compilation sake
+			// In Idris, you can leave a hole.
+			return res;
 		}
 	} else {
 		// split the leaf and pass the median key up
@@ -747,6 +803,11 @@ bool unit_test_insert_32()
 			<< endl;
 	}
 	return test_res;
+}
+
+bool unit_test_insert_into_full_node_and_split_1()
+{
+	return false;
 }
 
 /*
