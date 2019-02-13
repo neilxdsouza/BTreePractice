@@ -29,7 +29,24 @@ struct BTreeNode {
 	{}
 	BTreeNode() : key_vec(), branch_vec() { }
 	bool is_leaf() { return branch_vec.size() == 0; }
+	string print();
 };
+
+string BTreeNode::print()
+{
+	stringstream ss;
+	int i = 0;
+	for ( ; i < key_vec.size(); ++i) {
+		if (branch_vec.size() > 0) {
+			ss << " / " << ((int) branch_vec[i]) ;
+		}
+		ss << " : " <<key_vec[i];
+	}
+	if (branch_vec.size() > 0) {
+		ss << " / " << (int) branch_vec[i] << endl;
+	}
+	return ss.str();
+}
 
 
 struct SearchRes {
@@ -102,7 +119,8 @@ struct InsertResult {
 
 void print_vec(string label, vector<string> v)
 {
-	cout << label << "sz: " << v.size() << endl;
+	string fn (__PRETTY_FUNCTION__);
+	cout << "ENTER fn : " << fn << label << "sz: " << v.size() << endl;
 	for (int i = 0; i < v.size(); ++i) { cout <<  ", " <<  v[i]; }
 	cout << endl;
 }
@@ -148,21 +166,26 @@ void insert_into_non_full_node(string key, BTreeNode * n, BTreeNode * right_bran
 	n->key_vec.insert(n->key_vec.begin() + insert_pos  ,  key);
 }
 
-InsertResult  insert_into_full_node_and_split(string key, BTreeNode * n, BTreeNode * right_branch)
+InsertResult  insert_into_full_node_and_split(string key,  BTreeNode * right_branch, 
+		 BTreeNode * n)
 {
 	string fn (__PRETTY_FUNCTION__);
+	cout << "ENTER " << fn << key << endl;
 	// return dummy value for Now
 	int insert_pos = find_insert_position(key, n);
-	if (insert_pos < MAX_NODE_INDEX) {
+	if (insert_pos < (MAX_NODE_INDEX+1)/2) {
 		// new node going into the left half
 		n->key_vec.insert(n->key_vec.begin() + insert_pos  ,  key);
+		n->branch_vec.insert(n->branch_vec.begin() + insert_pos + 1, right_branch);
+		cout << "after insert: " << n->print() << endl;
 		vector<string> v_left, v_right;
 		string median_key = n->key_vec[(MAX_NODE_INDEX + 1)/2];
-		v_left.reserve(MAX_NODE_INDEX+1); v_right.reserve(MAX_NODE_INDEX+1);
-		std::copy_n(n->key_vec.cbegin(), (MAX_NODE_INDEX+1)/2 , v_left.begin());
-		std::copy_n(n->key_vec.cbegin()+ (MAX_NODE_INDEX+1)/2 + 1,
-				(MAX_NODE_INDEX+1)/2, v_right.begin());
 		cout << "median_key: " << median_key << endl;
+		v_left.reserve(MAX_NODE_INDEX+1); v_right.reserve(MAX_NODE_INDEX+1);
+		std::copy_n(n->key_vec.cbegin(), (MAX_NODE_INDEX+1)/2 , back_inserter(v_left));
+		std::copy_n(n->key_vec.cbegin()+ (MAX_NODE_INDEX+1)/2 + 1,
+				(MAX_NODE_INDEX+1)/2, back_inserter( v_right));
+		////cout << "median_key: " << median_key << endl;
 		print_vec("v_left", v_left);
 		print_vec("v_right", v_right);
 	} else {
@@ -178,13 +201,14 @@ InsertResult recursivelyInsertAtLeaf(string key, BTreeNode * & n)
 	cout << "ENTER " << fn << key << endl;
 	if (n->is_leaf()) {
 		// if there's space insert the data into the leaf
+		//SearchRes res = search_node
 		if (n->key_vec.size() < MAX_NODE_INDEX + 1) {
 			insert_into_non_full_node(key, n, 0);
 			return InsertResult(false, n);
 		} else {
 			// we need to insert the key and split the 
 			// node at the median
-			InsertResult  res = insert_into_full_node_and_split(key, n, 0);
+			InsertResult  res = insert_into_full_node_and_split(key, 0, n);
 			// for now as a place holder return a dummy wrong value for 
 			// code compilation sake
 			// In Idris, you can leave a hole.
@@ -807,6 +831,23 @@ bool unit_test_insert_32()
 
 bool unit_test_insert_into_full_node_and_split_1()
 {
+	vector<string> node_keys ;
+	node_keys.push_back("ad");
+	node_keys.push_back("ah");
+	node_keys.push_back("al");
+	node_keys.push_back("ap");
+	vector<BTreeNode*> branches;
+	branches.push_back((BTreeNode*) 10);
+	branches.push_back((BTreeNode*) 20);
+	branches.push_back((BTreeNode*) 30);
+	branches.push_back((BTreeNode*) 40);
+	branches.push_back((BTreeNode*) 50);
+	BTreeNode * insert_targe_node = new BTreeNode(node_keys, branches);
+	
+	string new_key = "af";
+	BTreeNode * right_branch = (BTreeNode*) 25;
+	SearchRes res = search_node(new_key, insert_targe_node);
+	InsertResult ins_res = insert_into_full_node_and_split(new_key, right_branch, insert_targe_node);
 	return false;
 }
 
@@ -941,6 +982,11 @@ int main()
 	{
 		++n_tests;
 		unit_test_insert_32() ? 
+			++n_passed : n_passed;
+	}
+	{
+		++n_tests;
+		unit_test_insert_into_full_node_and_split_1() ? 
 			++n_passed : n_passed;
 	}
 
