@@ -3,5 +3,6 @@ BTree.exe: BTree.cpp
 
 .PHONY: run
 
+# valgrind needed to catch memory errors
 run: BTree.exe
 	valgrind ./BTree.exe 

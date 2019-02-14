@@ -99,22 +99,34 @@ SearchRes search_node(string key, BTreeNode * n)
 struct InsertResult {
 	bool node_was_split;
 	string median_key_from_below;
-	vector<string> new_left_keys;
-	vector<string> new_right_keys;
-	BTreeNode* new_right_child_of_median_key;
 	BTreeNode * new_root;
-	InsertResult(bool f, BTreeNode * p_new_root): node_was_split(f), new_root(p_new_root) { }
+	BTreeNode * new_left, * new_right; 
+	InsertResult(bool f, BTreeNode * p_new_root): node_was_split(f), new_root(p_new_root),
+		new_left(0), new_right(0) { }
 	string print() {
 		string fn(__PRETTY_FUNCTION__);
 		stringstream ss;
 		ss << fn << " node_was_split: " << node_was_split
 			<< ", median_key_from_below: " << median_key_from_below << endl;
-		for (int i = 0; i < new_root->key_vec.size(); ++i) {
-			ss << ", key_vec[" << i << "]: " << new_root->key_vec[i];
+		if (new_root) {
+			ss << " new_root: " << new_root->print();
 		}
+		if (new_left) {
+			ss << " new_left: " <<  new_left->print();
+		}
+		if (new_right) {
+			ss << " new_right: " <<  new_right->print();
+		}
+		//	for (int i = 0; i < new_root->key_vec.size(); ++i) {
+		//		ss << ", key_vec[" << i << "]: " << new_root->key_vec[i];
+		//	}
 		ss << endl;
 		return ss.str();
 	}
+	InsertResult(bool t, string median_key, BTreeNode * new_l, BTreeNode * new_r) :
+		node_was_split(t), median_key_from_below(median_key),
+		new_root(0), new_left(new_l), new_right(new_r)
+	{ }
 };
 
 void print_vec(string label, vector<string> v)
@@ -188,6 +200,15 @@ InsertResult  insert_into_full_node_and_split(string key,  BTreeNode * right_bra
 		////cout << "median_key: " << median_key << endl;
 		print_vec("v_left", v_left);
 		print_vec("v_right", v_right);
+		vector<BTreeNode*> v_left_branches;
+		vector<BTreeNode*> v_right_branches;
+		std::copy_n(n->branch_vec.cbegin(), (MAX_NODE_INDEX+1)/2 + 1 , back_inserter(v_left_branches));
+		std::copy_n(n->branch_vec.cbegin()+ (MAX_NODE_INDEX+1)/2 + 1,
+				(MAX_NODE_INDEX+1)/2 + 1, back_inserter( v_right_branches));
+		BTreeNode * left_n = new BTreeNode(v_left, v_left_branches);
+		BTreeNode * right_n = new BTreeNode(v_right, v_right_branches);
+		InsertResult ins_res(true, median_key, left_n, right_n);
+		return ins_res;
 	} else {
 		// new node going into the right half
 	}
@@ -831,6 +852,7 @@ bool unit_test_insert_32()
 
 bool unit_test_insert_into_full_node_and_split_1()
 {
+	string fn(__PRETTY_FUNCTION__);
 	vector<string> node_keys ;
 	node_keys.push_back("ad");
 	node_keys.push_back("ah");
@@ -848,6 +870,7 @@ bool unit_test_insert_into_full_node_and_split_1()
 	BTreeNode * right_branch = (BTreeNode*) 25;
 	SearchRes res = search_node(new_key, insert_targe_node);
 	InsertResult ins_res = insert_into_full_node_and_split(new_key, right_branch, insert_targe_node);
+	cout << fn << ins_res.print() << endl;
 	return false;
 }
 
