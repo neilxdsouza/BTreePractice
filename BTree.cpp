@@ -936,7 +936,47 @@ bool unit_test_insert_into_full_node_and_split_2()
 	SearchRes res = search_node(new_key, insert_targe_node);
 	InsertResult ins_res = insert_into_full_node_and_split(new_key, right_branch, insert_targe_node);
 	cout << fn << ins_res.print() << endl;
-	return false;
+	bool test_res = 
+		ins_res.node_was_split == true && 
+		ins_res.new_left != 0 && ins_res.new_left -> key_vec.size() == 2 &&
+		ins_res.new_left -> key_vec[0] == "ad" && ins_res.new_left -> key_vec[1] == "ah" &&
+		ins_res.new_left->branch_vec.size() == 3 && 
+		ins_res.new_left->branch_vec[0] == (BTreeNode *) 10 && 
+		ins_res.new_left->branch_vec[1] == (BTreeNode *) 20 && 
+		ins_res.new_left->branch_vec[2] == (BTreeNode *) 30 &&
+		ins_res.median_key_from_below == "al" &&
+		ins_res.new_right != 0 && ins_res.new_right -> key_vec.size() == 2 &&
+		ins_res.new_right -> key_vec[0] == "an" && ins_res.new_right -> key_vec[1] == "ap" &&
+		ins_res.new_right->branch_vec.size() == 3 && 
+		ins_res.new_right->branch_vec[0] == (BTreeNode *) 40 && 
+		ins_res.new_right->branch_vec[1] == (BTreeNode *) 45 && 
+		ins_res.new_right->branch_vec[2] == (BTreeNode *) 50;
+	if (!test_res) {
+		cout << fn << "failed "
+			<< "\nins_res.node_was_split == true                       : " <<  (ins_res.node_was_split == true)
+			<< "\nins_res.new_left != 0                                : " << (ins_res.new_left != 0 )
+			<< "\nins_res.new_left -> key_vec.size() == 2              : " << (ins_res.new_left -> key_vec.size() == 2)
+			<< "\nins_res.new_left -> key_vec[0] == \"ad\"             : "  << (ins_res.new_left -> key_vec[0] == "ad")
+			<< "\nins_res.new_left -> key_vec[1] == \"ah\"             : " << (ins_res.new_left -> key_vec[1] == "ah")
+			<< "\nins_res.new_left->branch_vec.size() == 3             : " << (ins_res.new_left->branch_vec.size() == 3) 
+			<< "\nins_res.new_left->branch_vec[0] == (BTreeNode *) 10  : " << (ins_res.new_left->branch_vec[0] == (BTreeNode *) 10 )
+			<< "\nins_res.new_left->branch_vec[1] == (BTreeNode *) 20  : " << (ins_res.new_left->branch_vec[1] == (BTreeNode *) 20 )
+			<< "\nins_res.new_left->branch_vec[2] == (BTreeNode *) 30  : " << (ins_res.new_left->branch_vec[2] == (BTreeNode *) 30) 
+			<< "\nins_res.median_key_from_below == \"al\"              : " << (ins_res.median_key_from_below == "al")
+			<< "\nins_res.new_right != 0                               : " << (ins_res.new_right != 0)
+			<< "\nins_res.new_right -> key_vec.size() == 2             : " << (ins_res.new_right -> key_vec.size() == 2 )
+			<< "\nins_res.new_right -> key_vec[0] == \"al\"            : " << (ins_res.new_right -> key_vec[0] == "al" )
+			<< "\nins_res.new_right -> key_vec[1] == \"ap\"            : " << (ins_res.new_right -> key_vec[1] == "ap" )
+			<< "\nins_res.new_right->branch_vec.size() == 3            : " << (ins_res.new_right->branch_vec.size() == 3 )
+			<< "\nins_res.new_right->branch_vec[0] == (BTreeNode *) 40 : " << (ins_res.new_right->branch_vec[0] == (BTreeNode *) 40 )
+			<< "\nins_res.new_right->branch_vec[1] == (BTreeNode *) 45 : " << (ins_res.new_right->branch_vec[1] == (BTreeNode *) 45 )
+			<< "\nins_res.new_right->branch_vec[2] == (BTreeNode *) 50 : " << (ins_res.new_right->branch_vec[2] == (BTreeNode *) 50 )
+			<< endl;
+		//ins_res.new_right->branch_vec[0] == (BTreeNode *) 30 && 
+		//ins_res.new_right->branch_vec[1] == (BTreeNode *) 40 && 
+		//ins_res.new_right->branch_vec[2] == (BTreeNode *) 50;
+	}
+	return test_res;
 }
 
 /*
